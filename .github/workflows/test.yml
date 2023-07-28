@@ -31,5 +31,5 @@ jobs:
       - name: Show output
         if: steps.test-step.outputs.pr
         run: |
-          echo ${{ steps.test-step.outputs.pr.number }}
+          echo ${{ fromJson(steps.test-step.outputs.pr).number }}
 
