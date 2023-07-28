@@ -1,11 +1,10 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Extract PR on Push'
+description: 'Utility action to lookup the PR associated to a commit.'
+author: 'Karim Kanso'
 inputs:
-  milliseconds: # change this
+  github-token:
+    description: 'The repository token, i.e. secrets.GITHUB_TOKEN'
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
 runs:
   using: 'node16'
   main: 'dist/index.js'

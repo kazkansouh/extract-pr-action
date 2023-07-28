@@ -1,19 +1,41 @@
+/*
+ * Created on Thu Jul 27 2023
+ *
+ * Copyright (c) 2023 Karim Kanso
+ *
+ * MIT License
+ */
+
 import * as core from '@actions/core'
-import {wait} from './wait'
+import {getInputs, getPR} from './getpr'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    core.debug('starting')
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const i = getInputs()
+    if (!i) {
+      return
+    }
 
-    core.setOutput('time', new Date().toTimeString())
+    core.debug(`owner: ${i.owner} repo: ${i.repo} commit: ${i.commitSha}`)
+
+    const pr = await getPR(i)
+
+    if (pr !== null) {
+      core.info(`✅ got pull-request ${pr.number} for ${i.commitSha}`)
+      core.setOutput('pr', pr)
+    } else {
+      core.warning(`❌ no pull-request found for ${i.commitSha}`)
+      core.setOutput('pr', false)
+    }
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+    core.debug(`caught error: ${error}`)
+    if (error instanceof Error) {
+      core.setFailed(error.message)
+    }
   }
+  core.debug('finished')
 }
 
 run()
