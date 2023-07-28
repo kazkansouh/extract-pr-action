@@ -27,7 +27,6 @@ jobs:
         uses: ./
         id: test-step
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           commit-sha: ${{ github.event.pull_request && 'ee9b91b5e29d4e5d0a069626b187b0c618390df9' || '' }} # add default commit sha when testing from pr
       - name: Show PR number
         if: steps.test-step.outputs.pr != 'false'
