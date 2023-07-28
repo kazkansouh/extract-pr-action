@@ -1,0 +1,17 @@
+[
+  {
+    "name": "bump:major",
+    "color": "78EB1C",
+    "description": "bump major version on merge"
+  },
+  {
+    "name": "bump:minor",
+    "color": "78EB1C",
+    "description": "bump minor version on merge"
+  },
+  {
+    "name": "bump:patch",
+    "color": "78EB1C",
+    "description": "bump patch version on merge"
+  }
+]
