@@ -1,0 +1,34 @@
+name: tag release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  load-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Extract PR
+        uses: ./
+        id: pr
+    outputs:
+      is-pr: ${{ steps.pr.outputs.pr != 'false' }}
+      head_ref: ${{ fromJson(steps.pr.outputs.pr).head.ref }}
+      head_repo: ${{ fromJson(steps.pr.outputs.pr).head.repo.full_name }}
+     
+  tag:
+    runs-on: ubuntu-latest
+    needs:
+      - load-pr
+    if: needs.load-pr.outputs.is-pr == 'true' && startsWith(needs.load-pr.outputs.head_ref, 'bumper/') && needs.load-pr.outputs.head_repo == github.repository
+    steps:
+      - name: Create Tag
+        env:
+          HEAD_REF: ${{ needs.load-pr.outputs.head_ref }}
+        run: |
+          echo creating tag ${HEAD_REF#bumper/} 
+          git tag ${HEAD_REF#bumper/}
+          git push ${HEAD_REF#bumper/}
