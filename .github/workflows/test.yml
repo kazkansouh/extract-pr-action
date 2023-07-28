@@ -29,5 +29,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Show output
+        if: steps.test-step.outputs.pr
         run: |
-          echo ${{ steps.test-step.outputs.pr }}
+          echo ${{ steps.test-step.outputs.pr.number }}
+
