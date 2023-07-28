@@ -3,8 +3,8 @@ description: 'Utility action to lookup the PR associated to a commit.'
 author: 'Karim Kanso'
 inputs:
   github-token:
-    description: 'The repository token, i.e. secrets.GITHUB_TOKEN'
-    required: true
+    description: 'The repository token, i.e. github.token'
+    default: ${{ github.token }}
   commit-sha:
     description: 'Specify a GitHub commit SHA to lookup instead of using GITHUB_SHA'
 runs:
