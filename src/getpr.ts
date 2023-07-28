@@ -14,11 +14,15 @@ import type {components} from '@octokit/openapi-types/types'
 import {inspect} from 'node:util'
 
 export interface Inputs {
-  eventName: 'push'
+  eventName: 'push' | 'pull_request'
   token: string
   owner: string
   repo: string
   commitSha: string
+}
+
+function isEventName(o: unknown): o is 'push' | 'pull_request' {
+  return typeof o === 'string' && ['push', 'pull_request'].includes(o)
 }
 
 export function getInputs(): Inputs | null {
@@ -32,12 +36,12 @@ export function getInputs(): Inputs | null {
 
   core.debug(inspect(inputs, false, 3, true))
 
-  if (inputs.eventName !== 'push') {
-    core.setFailed('action can only be triggered on a push')
+  if (!isEventName(inputs.eventName)) {
+    core.setFailed('action can only be triggered on a push or pull_request')
     return null
   }
 
-  return {...inputs, eventName: 'push'}
+  return {...inputs, eventName: inputs.eventName}
 }
 
 export async function getPR(
