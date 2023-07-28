@@ -5,6 +5,8 @@ inputs:
   github-token:
     description: 'The repository token, i.e. secrets.GITHUB_TOKEN'
     required: true
+  commit-sha:
+    description: 'Specify a GitHub commit SHA to lookup instead of using GITHUB_SHA'
 runs:
   using: 'node16'
   main: 'dist/index.js'

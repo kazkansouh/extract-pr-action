@@ -31,7 +31,16 @@ export function getInputs(): Inputs | null {
     token: core.getInput('github-token', {required: true}),
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
-    commitSha: github.context.sha
+    commitSha: core.getInput('commit-sha')
+  }
+
+  if (!inputs.commitSha || inputs.commitSha === '') {
+    if (inputs.eventName !== 'push') {
+      core.warning('using GITHUB_SHA for a non-push event')
+    }
+    inputs.commitSha = github.context.sha
+  } else {
+    core.info(`using overridden commit sha of ${inputs.commitSha}`)
   }
 
   core.debug(inspect(inputs, false, 3, true))
@@ -57,11 +66,11 @@ export async function getPR(
   const data = r.data
 
   if (data.length === 0) {
-    core.error('push not linked to a pull-request')
+    core.error('commit not linked to a pull-request')
     return null
   }
   if (data.length !== 1) {
-    core.warning('push not linked to multiple pull-requests')
+    core.warning('commit linked to multiple pull-requests')
     return null
   }
   return data[0]

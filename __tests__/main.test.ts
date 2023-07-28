@@ -20,8 +20,11 @@ describe('getInputs', () => {
 
   afterEach(() => {
     delete process.env['INPUT_GITHUB-TOKEN']
+    delete process.env['INPUT_COMMIT-SHA']
     delete process.env['GITHUB_REPOSITORY']
     delete process.env['GITHUB_SHA']
+    delete process.env['GITHUB_REF']
+    delete process.env['GITHUB_BASE_REF']
     delete process.env['GITHUB_EVENT_NAME']
   })
 
@@ -50,7 +53,8 @@ describe('getInputs', () => {
     test('pull request', async () => {
       process.env['INPUT_GITHUB-TOKEN'] = 'ghSecretToken'
       process.env['GITHUB_REPOSITORY'] = 'owner/repo'
-      process.env['GITHUB_SHA'] = 'ee9b91b5e29d4e5d0a069626b187b0c618390df9'
+      process.env['INPUT_COMMIT-SHA'] =
+        '0bab2f48797f31f980f4f954a6e0074febe25401'
       process.env['GITHUB_EVENT_NAME'] = 'pull_request'
 
       const {getInputs} = await import('../src/getpr')
@@ -60,7 +64,7 @@ describe('getInputs', () => {
         token: 'ghSecretToken',
         owner: 'owner',
         repo: 'repo',
-        commitSha: 'ee9b91b5e29d4e5d0a069626b187b0c618390df9'
+        commitSha: '0bab2f48797f31f980f4f954a6e0074febe25401'
       })
     })
   })

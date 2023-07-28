@@ -33,10 +33,20 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Show PR number
-        if: steps.extract-pr.outputs.pr
+      - name: Linked PR Found
+        if: steps.test-step.outputs.pr == 'false'
         run: |
-          echo ${{ fromJson(steps.extract-pr.outputs.pr).number }}
+          echo No PR found
+
+      - name: Show PR number
+        if: steps.test-step.outputs.pr != 'false'
+        run: |
+          echo ${{ fromJson(steps.test-step.outputs.pr).number }}
+
+      - name: Show PR labels
+        if: steps.test-step.outputs.pr != 'false'
+        run: |
+          echo '${{ toJson(fromJson(steps.test-step.outputs.pr).labels.*.name) }}'
 ```
 
 ## Development
