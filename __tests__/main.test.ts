@@ -1,5 +1,4 @@
 import * as process from 'process'
-import * as cp from 'child_process'
 import * as path from 'path'
 import {
   expect,
@@ -30,28 +29,47 @@ describe('getInputs', () => {
     await expect(import('../src/getpr')).resolves.toHaveProperty('getInputs')
   })
 
-  test('nominal', async () => {
-    process.env['INPUT_GITHUB-TOKEN'] = 'ghSecretToken'
-    process.env['GITHUB_REPOSITORY'] = 'owner/repo'
-    process.env['GITHUB_SHA'] = 'ee9b91b5e29d4e5d0a069626b187b0c618390df9'
-    process.env['GITHUB_EVENT_NAME'] = 'push'
+  describe('nominal', () => {
+    test('push', async () => {
+      process.env['INPUT_GITHUB-TOKEN'] = 'ghSecretToken'
+      process.env['GITHUB_REPOSITORY'] = 'owner/repo'
+      process.env['GITHUB_SHA'] = 'ee9b91b5e29d4e5d0a069626b187b0c618390df9'
+      process.env['GITHUB_EVENT_NAME'] = 'push'
 
-    const {getInputs} = await import('../src/getpr')
+      const {getInputs} = await import('../src/getpr')
 
-    expect(getInputs()).toStrictEqual({
-      eventName: 'push',
-      token: 'ghSecretToken',
-      owner: 'owner',
-      repo: 'repo',
-      commitSha: 'ee9b91b5e29d4e5d0a069626b187b0c618390df9'
+      expect(getInputs()).toStrictEqual({
+        eventName: 'push',
+        token: 'ghSecretToken',
+        owner: 'owner',
+        repo: 'repo',
+        commitSha: 'ee9b91b5e29d4e5d0a069626b187b0c618390df9'
+      })
+    })
+
+    test('pull request', async () => {
+      process.env['INPUT_GITHUB-TOKEN'] = 'ghSecretToken'
+      process.env['GITHUB_REPOSITORY'] = 'owner/repo'
+      process.env['GITHUB_SHA'] = 'ee9b91b5e29d4e5d0a069626b187b0c618390df9'
+      process.env['GITHUB_EVENT_NAME'] = 'pull_request'
+
+      const {getInputs} = await import('../src/getpr')
+
+      expect(getInputs()).toStrictEqual({
+        eventName: 'pull_request',
+        token: 'ghSecretToken',
+        owner: 'owner',
+        repo: 'repo',
+        commitSha: 'ee9b91b5e29d4e5d0a069626b187b0c618390df9'
+      })
     })
   })
 
-  test('pull request', async () => {
+  test('unsupported event', async () => {
     process.env['INPUT_GITHUB-TOKEN'] = 'ghSecretToken'
     process.env['GITHUB_REPOSITORY'] = 'owner/repo'
     process.env['GITHUB_SHA'] = 'ee9b91b5e29d4e5d0a069626b187b0c618390df9'
-    process.env['GITHUB_EVENT_NAME'] = 'pull_request'
+    process.env['GITHUB_EVENT_NAME'] = 'label'
 
     const {getInputs} = await import('../src/getpr')
 
