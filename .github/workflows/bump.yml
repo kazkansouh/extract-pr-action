@@ -1,0 +1,84 @@
+name: "bumper"
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  load-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Extract PR
+        uses: ./
+        id: pr
+
+    outputs:
+      is-pr: ${{ steps.pr.outputs.pr != 'false' }}
+      version-bump: ${{ contains(fromJson(steps.pr.outputs.pr).labels.*.name, 'bump:patch') && 'patch' || (contains(fromJson(steps.pr.outputs.pr).labels.*.name, 'bump:minor') && 'minor' || (contains(fromJson(steps.pr.outputs.pr).labels.*.name, 'bump:major') && 'major' || 'unknown')) }}
+      number: ${{ fromJson(steps.pr.outputs.pr).number }}
+      head_ref: ${{ fromJson(steps.pr.outputs.pr).head.ref }}
+      head_repo: ${{ fromJson(steps.pr.outputs.pr).head.repo.full_name }}
+
+  bump:
+    runs-on: ubuntu-latest
+    needs:
+      - load-pr
+    if: needs.load-pr.outputs.is-pr == 'true' && !(startsWith(needs.load-pr.outputs.head_ref, 'bumper/')) && needs.load-pr.outputs.version-bump != 'unknown'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3.7.0
+        with:
+          node-version: 18.x
+
+      - name: NPM Bump
+        id: bump
+        run: |
+          git config user.email 'bumperbot[bot]@users.noreply.github.com"'
+          git config user.name 'bumperbot[bot]'
+          npm version ${{ needs.load-pr.outputs.version-bump }}
+          echo "version=$(jq -r .version < package.json)" >> "$GITHUB_OUTPUT"
+
+    #  - name: Push
+    #    uses: ad-m/github-push-action@master
+    #    with:
+    #      branch: bumper/${{ steps.bump.outputs.version }}
+
+      - name: Create Bumperbot PR
+        id: create-pr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          branch: bumper/${{ steps.bump.outputs.version }}
+          delete-branch: true
+          title: Bump ${{ needs.load-pr.outputs.version-bump }} version to ${{ steps.bump.outputs.version }}
+          body: "created by bumperbot in response to #${{ needs.load-pr.outputs.number }}"
+
+      #  run: |
+      #    PR_URL=$(gh pr create --base ${{ github.ref }} --head bumper/${{ steps.bump.outputs.version }} --title "Bump ${{ needs.load-pr.outputs.version-bump }} version to ${{ steps.bump.outputs.version }}" --body "created by bumperbot in response to #${{ needs.load-pr.outputs.number }}")
+
+      - name: Set auto-merge for Bumperbot PR
+        run: gh pr merge --auto --rebase "${{ steps.create-pr.outputs.pull-request-url }}"
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+  tag:
+    runs-on: ubuntu-latest
+    needs:
+      - load-pr
+    if: needs.load-pr.outputs.is-pr == 'true' && startsWith(needs.load-pr.outputs.head_ref, 'bumper/') && needs.load-pr.outputs.head_repo == github.repository
+    steps:
+      - name: Create Tag
+        env:
+          HEAD_REF: ${{ needs.load-pr.outputs.head_ref }}
+        run: |
+          echo creating tag ${HEAD_REF#bumper/} 
+          git tag ${HEAD_REF#bumper/}
+          git push ${HEAD_REF#bumper/}
