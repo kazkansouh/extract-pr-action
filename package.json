@@ -1,6 +1,6 @@
 {
   "name": "extract-pr-action",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "GitHub action to extract PR from a PUSH",
   "main": "lib/main.js",
